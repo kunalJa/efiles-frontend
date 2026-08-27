@@ -109,17 +109,20 @@ function validateCheckoutSession(session: Stripe.Checkout.Session) {
   if (!email) {
     throw new CheckoutValidationError("Customer email is required");
   }
+  if (!paymentShippingMatches(paymentIntent, shipping)) {
+    throw new CheckoutValidationError(
+      "PaymentIntent shipping details did not match Checkout",
+    );
+  }
 
-  return { orderId, size, paymentIntent, shipping, email };
+  return { orderId, size, paymentIntent, email };
 }
 
-function paymentDetailsMatch(
+function paymentShippingMatches(
   paymentIntent: Stripe.PaymentIntent,
   shipping: ValidatedShipping,
-  email: string,
 ) {
   return (
-    paymentIntent.receipt_email === email &&
     paymentIntent.shipping?.name === shipping.name &&
     paymentIntent.shipping?.address?.line1 === shipping.address.line1 &&
     paymentIntent.shipping?.address?.city === shipping.address.city &&
@@ -176,7 +179,7 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  const { orderId, size, paymentIntent, shipping, email } = validated;
+  const { orderId, size, paymentIntent, email } = validated;
   const functionName = process.env.EFILES_LAMBDA_FUNCTION_NAME;
 
   if (!functionName) {
@@ -184,21 +187,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    if (!paymentDetailsMatch(paymentIntent, shipping, email)) {
+    if (paymentIntent.receipt_email !== email) {
       await stripe.paymentIntents.update(paymentIntent.id, {
         receipt_email: email,
-        shipping: {
-          name: shipping.name,
-          phone: shipping.phone || undefined,
-          address: {
-            line1: shipping.address.line1,
-            line2: shipping.address.line2 || undefined,
-            city: shipping.address.city,
-            state: shipping.address.state || undefined,
-            postal_code: shipping.address.postalCode,
-            country: shipping.address.country,
-          },
-        },
       });
     }
 

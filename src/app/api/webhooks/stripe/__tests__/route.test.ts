@@ -52,7 +52,18 @@ function validSession(): Stripe.Checkout.Session {
       capture_method: "manual",
       status: "requires_capture",
       receipt_email: null,
-      shipping: null,
+      shipping: {
+        name: "Archive Buyer",
+        phone: "5555555555",
+        address: {
+          city: "Boston",
+          country: "US",
+          line1: "1 Main Street",
+          line2: null,
+          postal_code: "02108",
+          state: "MA",
+        },
+      },
       metadata: {
         order_id: "order_123",
         size: "L",
@@ -107,13 +118,9 @@ test("verifies the raw body, validates checkout, and invokes Lambda asynchronous
   expect(retrieveSession).toHaveBeenCalledWith("cs_test_123", {
     expand: ["payment_intent", "shipping_cost.shipping_rate"],
   });
-  expect(updatePaymentIntent).toHaveBeenCalledWith(
-    "pi_test_123",
-    expect.objectContaining({
-      receipt_email: "buyer@example.com",
-      shipping: expect.objectContaining({ name: "Archive Buyer" }),
-    }),
-  );
+  expect(updatePaymentIntent).toHaveBeenCalledWith("pi_test_123", {
+    receipt_email: "buyer@example.com",
+  });
 
   const command = sendLambda.mock.calls[0][0];
   expect(command.input.InvocationType).toBe("Event");
