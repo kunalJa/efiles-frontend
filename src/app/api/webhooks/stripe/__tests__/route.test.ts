@@ -77,7 +77,7 @@ function webhookRequest() {
 
 beforeEach(() => {
   process.env.STRIPE_WEBHOOK_SECRET = "whsec_test";
-  process.env.AWS_LAMBDA_FUNCTION_NAME = "efiles-order-processor";
+  process.env.EFILES_LAMBDA_FUNCTION_NAME = "efiles-order-processor";
   jest.mocked(getStripe).mockReturnValue({
     webhooks: { constructEvent },
     checkout: { sessions: { retrieve: retrieveSession } },

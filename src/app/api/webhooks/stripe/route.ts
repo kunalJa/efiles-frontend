@@ -177,7 +177,7 @@ export async function POST(request: Request) {
   }
 
   const { orderId, size, paymentIntent, shipping, email } = validated;
-  const functionName = process.env.AWS_LAMBDA_FUNCTION_NAME;
+  const functionName = process.env.EFILES_LAMBDA_FUNCTION_NAME;
 
   if (!functionName) {
     return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
