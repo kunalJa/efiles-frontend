@@ -3,42 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type RefObject } from "react";
+import ProductImageCarousel, { type ProductImage } from "@/components/ProductImageCarousel";
 
-const INTRO_VIDEO = "/intro-animation.mp4?v=menu-2";
+const INTRO_VIDEO = "/intro-animation.mp4?v=desktop-final-1";
 const EASTER_VIDEO = "/easter-egg.mp4";
-
-function ShirtPreview({ redacted }: { redacted?: boolean }) {
-  return (
-    <svg
-      role="img"
-      aria-label={redacted ? "White Redacted shirt preview" : "White Mystery File shirt preview"}
-      viewBox="0 0 240 240"
-      className="mx-auto h-full w-full max-w-48"
-    >
-      <path
-        d="M75 36 91 25h58l16 11 43 21-20 41-25-11v122H77V87L52 98 32 57Z"
-        fill="#f8f7f3"
-        stroke="#aaa99f"
-        strokeWidth="2"
-      />
-      <path d="M91 25c3 19 13 28 29 28s26-9 29-28" fill="none" stroke="#cccac3" strokeWidth="2" />
-      <path d="M77 87v122m86-122v122" stroke="#e4e2da" strokeWidth="2" />
-      {redacted ? (
-        <g fill="#242522">
-          <rect x="96" y="96" width="48" height="7" />
-          <rect x="96" y="110" width="40" height="7" />
-          <rect x="96" y="124" width="48" height="7" />
-          <rect x="96" y="138" width="29" height="7" />
-        </g>
-      ) : (
-        <>
-          <rect x="93" y="94" width="54" height="61" fill="#e8e6dd" stroke="#a4a49b" />
-          <text x="120" y="139" textAnchor="middle" fontFamily="serif" fontSize="44" fill="#35372f">?</text>
-        </>
-      )}
-    </svg>
-  );
-}
+const PRODUCT_IMAGES = [
+  { src: "/eft01_question_front.png?v=photos-2", alt: "White Mystery File shirt front with question mark design", label: "Mystery front", width: 2241, height: 2304 },
+  { src: "/eft01_front.png?v=photos-2", alt: "White Mystery File shirt front with document print", label: "Document front", width: 2241, height: 2304 },
+  { src: "/eft01_back.png?v=photos-2", alt: "White Mystery File shirt back with file ID print", label: "File ID back", width: 2241, height: 2304 },
+] as const satisfies readonly [ProductImage, ...ProductImage[]];
 
 function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
   onEasterEgg: () => void;
@@ -64,21 +37,21 @@ function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
           Public interest and the brave voice of victims are the only reasons the Epstein case, quietly quashed in 2008, continued to be investigated. Without intense public interest, the FBI and the U.S. attorney’s office in Manhattan may never have looked closer in 2018. The facts of the Epstein case are harrowing and yet in 2026 so few people have been held accountable and so few details about this seemingly international criminal system have come to light. The headlines move on, but renewed public interest is all it takes for the sniffing dogs of media to hound after a topic.
         </p>
         <p className="mt-4 font-heading text-[15px] leading-relaxed text-[#4b5045] sm:text-base">
-          This streetwear project is controversial, and ultimately probably a lackluster attempt in bringing about change, but I think the edginess and curiosity of people seeing it in public might make it have some small impact. TBD (between 50-100%) of Net profits will be donated to <a href="https://www.worldwithoutexploitation.org" target="_blank" rel="noopener noreferrer" className="underline">World Without Exploitation</a>.
+          This streetwear project is controversial, and ultimately a tiny step towards change, but perhaps we can engage with public curiosity as people ask just what is on our shirts. 100% of Net profits will be donated to <a href="https://www.worldwithoutexploitation.org" target="_blank" rel="noopener noreferrer" className="underline">World Without Exploitation</a>. Consider donating directly instead!
         </p>
       </section>
 
       <section className="border-t border-[#777b6b]/35 py-8" aria-labelledby="collection-heading">
-        <h2 id="collection-heading" className="menu-heading text-center text-[clamp(2.3rem,4.2vw,3.6rem)] leading-none">the collection</h2>
-        <p className="mt-2 text-center font-heading text-sm italic text-[#696d60]">Wear the question. Keep asking it.</p>
+        <h2 id="collection-heading" className="menu-heading text-center text-[clamp(2.3rem,4.2vw,3.6rem)] leading-none">what file will you get?</h2>
+        <p className="mt-2 text-center font-heading text-sm italic text-[#696d60]">Each shirt will uniquely display one of over 1 million Epstein files. You alone will have that file.</p>
 
         <article className="mt-9 border-t border-[#777b6b]/35 pt-6">
+          <p className="mt-2 font-heading text-sm italic text-[#747869]">1 of 1 · White Gildan 5000 · S—XL</p>
+          <ProductImageCarousel productName="Mystery File shirt" images={PRODUCT_IMAGES} />
           <div className="flex items-end justify-between gap-2">
-            <h3 className="menu-heading text-[clamp(1.8rem,2.7vw,2.6rem)] leading-none">the mystery file</h3>
+            <h3 className="menu-heading mt-3 text-[clamp(1.8rem,2.7vw,2.6rem)] leading-none">the mystery file</h3>
             <span className="font-heading text-xl">$44</span>
           </div>
-          <p className="mt-2 font-heading text-sm italic text-[#747869]">An edition of one · White Gildan 5000 · S—XL</p>
-          <div className="mt-5 aspect-[4/3] bg-[#dcded1] p-2"><ShirtPreview /></div>
           <p className="mt-4 font-heading text-[15px] leading-relaxed text-[#4b5045]">A unique document from the archive, chosen after you order. Worn as an invitation to look closer and keep asking questions.</p>
           <Link href="/checkout" className="menu-buy-button mt-5 inline-flex min-h-11 w-full items-center justify-between px-4 py-2 font-heading text-base">
             <span>Make it yours</span><span aria-hidden="true">↗</span>
@@ -86,22 +59,11 @@ function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
           <p className="mt-2 font-heading text-xs italic text-[#707568]">+ $4.95 US shipping · $48.95 total</p>
         </article>
 
-        <article className="mt-10 border-t border-[#777b6b]/35 pt-6">
-          <div className="flex items-end justify-between gap-2">
-            <h3 className="menu-heading text-[clamp(1.8rem,2.7vw,2.6rem)] leading-none">the redacted file</h3>
-          </div>
-          <p className="mt-2 font-heading text-sm italic text-[#747869]">An unreleased edition · Coming soon</p>
-          <div className="mt-5 aspect-[4/3] bg-[#dcded1] p-2"><ShirtPreview redacted /></div>
-          <p className="mt-4 font-heading text-[15px] leading-relaxed text-[#4b5045]">A second way to wear the conversation. The details are still under wraps—not the reason behind them.</p>
-          <button type="button" disabled className="mt-5 min-h-11 w-full cursor-not-allowed border border-[#8d9185] px-4 py-2 text-left font-heading text-base text-[#737869]">
-            Coming soon
-          </button>
-        </article>
       </section>
 
       <footer className="border-t border-[#777b6b]/35 pb-5 pt-8 text-center">
         <h2 className="menu-heading text-[clamp(2rem,3.8vw,3rem)] leading-none">the fine print</h2>
-        <p className="mt-5 font-heading text-sm leading-relaxed text-[#55594e]">One shirt per order. Printed to order and shipped within the US. Stripe securely collects payment and delivery details. The file is assigned after checkout.</p>
+        <p className="mt-5 font-heading text-sm leading-relaxed text-[#55594e]">One shirt per order. Printed to order and shipped within the US. Stripe securely collects payment and delivery details. The file is assigned after checkout. The front of the shirt displays page 1 of every pdf in the DOJ released Epstein files, the back of the shirt displays the file number. </p>
         <p className="mt-4 font-heading text-sm italic leading-relaxed text-[#55594e]">Keep the conversation alive. Protect survivors. Demand the truth.</p>
         <button type="button" onClick={onEasterEgg} className="mt-8 border-b border-[#55594e] pb-1 font-heading text-sm italic text-[#55594e] hover:text-black">
           One more thing from the archive ↗
@@ -155,7 +117,7 @@ export default function HomePage() {
     if (!stage || !scroll || !menuVisible) return;
 
     const redirectWheel = (event: WheelEvent) => {
-      if (event.ctrlKey) return;
+      if (event.ctrlKey || (event.target instanceof Element && event.target.closest("dialog[open]"))) return;
       event.preventDefault();
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? scroll.clientHeight : 1;
       scroll.scrollTop += event.deltaY * unit;
@@ -231,7 +193,7 @@ export default function HomePage() {
         <div
           ref={overlayRef}
           aria-hidden={!menuVisible}
-          className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-700 ${menuVisible ? "scale-100 opacity-100" : "pointer-events-none scale-[0.97] opacity-0"}`}
+          className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-700 ${menuVisible ? "scale-100 opacity-100" : "pointer-events-none opacity-0"}`}
         >
           <div className="relative flex h-full aspect-[1006/1080] items-center justify-center shadow-2xl max-md:aspect-auto max-md:w-full max-md:shadow-none">
             <Image src="/background-menu.jpg?v=menu-2" alt="" fill unoptimized priority className="pointer-events-none absolute inset-0 h-full w-full object-cover max-md:hidden" />
