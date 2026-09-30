@@ -109,7 +109,7 @@ export async function POST(request: Request) {
           },
         },
         success_url: `${appUrl}/orders/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${appUrl}/checkout?canceled=1`,
+        cancel_url: `${appUrl}/?canceled=1&size=${size}`,
       },
       { idempotencyKey: checkoutAttemptId },
     );

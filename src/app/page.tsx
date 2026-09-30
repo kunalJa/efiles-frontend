@@ -1,23 +1,52 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import ProductImageCarousel, { type ProductImage } from "@/components/ProductImageCarousel";
+import { SIZES, isShirtSize, type ShirtSize } from "@/lib/constants";
 
 const INTRO_VIDEO = "/intro-animation.mp4?v=desktop-final-1";
-const EASTER_VIDEO = "/easter-egg.mp4";
 const PRODUCT_IMAGES = [
   { src: "/eft01_question_front.png?v=photos-2", alt: "White Mystery File shirt front with question mark design", label: "Mystery front", width: 2241, height: 2304 },
   { src: "/eft01_front.png?v=photos-2", alt: "White Mystery File shirt front with document print", label: "Document front", width: 2241, height: 2304 },
   { src: "/eft01_back.png?v=photos-2", alt: "White Mystery File shirt back with file ID print", label: "File ID back", width: 2241, height: 2304 },
 ] as const satisfies readonly [ProductImage, ...ProductImage[]];
 
-function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
-  onEasterEgg: () => void;
-  filmNotice: string;
+function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
   scrollRef: RefObject<HTMLDivElement>;
+  canceled: boolean;
+  returnSize: ShirtSize | null;
 }) {
+  const [size, setSize] = useState<ShirtSize | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (returnSize) setSize(returnSize);
+  }, [returnSize]);
+
+  async function purchase() {
+    if (!size || loading) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/checkout/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ size }),
+      });
+      const result = (await response.json()) as { checkoutUrl?: string; error?: string };
+      if (!response.ok || !result.checkoutUrl) {
+        throw new Error(result.error || "Unable to start checkout");
+      }
+      window.location.assign(result.checkoutUrl);
+    } catch (checkoutError) {
+      setError(checkoutError instanceof Error ? checkoutError.message : "Unable to start checkout");
+      setLoading(false);
+    }
+  }
+
   return (
     <div ref={scrollRef} className="no-scrollbar absolute inset-0 overflow-y-auto overscroll-contain text-[#32352e] max-md:-left-5 max-md:w-[calc(100%+1.25rem)]">
       <div className="relative min-h-full px-[9%] pb-10 pt-10 sm:pt-12 max-md:pl-[calc(9%+1.25rem)]">
@@ -43,20 +72,32 @@ function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
 
       <section className="border-t border-[#777b6b]/35 py-8" aria-labelledby="collection-heading">
         <h2 id="collection-heading" className="menu-heading text-center text-[clamp(2.3rem,4.2vw,3.6rem)] leading-none">what file will you get?</h2>
-        <p className="mt-2 text-center font-heading text-sm italic text-[#696d60]">Each shirt will uniquely display one of over 1 million Epstein files. You alone will have that file.</p>
+        <p className="mt-2 text-center font-heading text-sm italic text-[#696d60]">Each shirt will uniquely display one of over 1 million Epstein files. You alone will have that file and its unique file number on the back.</p>
 
         <article className="mt-9 border-t border-[#777b6b]/35 pt-6">
-          <p className="mt-2 font-heading text-sm italic text-[#747869]">1 of 1 · White Gildan 5000 · S—XL</p>
+          <p className="mt-2 font-heading text-sm italic text-[#747869]">1 of 1 · White Gildan 5000 tee</p>
           <ProductImageCarousel productName="Mystery File shirt" images={PRODUCT_IMAGES} />
-          <div className="flex items-end justify-between gap-2">
-            <h3 className="menu-heading mt-3 text-[clamp(1.8rem,2.7vw,2.6rem)] leading-none">the mystery file</h3>
-            <span className="font-heading text-xl">$44</span>
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <h3 className="menu-heading text-[clamp(1.8rem,2.7vw,2.6rem)] leading-none">white tee</h3>
+            <span className="font-heading text-xl leading-none">$44</span>
           </div>
-          <p className="mt-4 font-heading text-[15px] leading-relaxed text-[#4b5045]">A unique document from the archive, chosen after you order. Worn as an invitation to look closer and keep asking questions.</p>
-          <Link href="/checkout" className="menu-buy-button mt-5 inline-flex min-h-11 w-full items-center justify-between px-4 py-2 font-heading text-base">
-            <span>Make it yours</span><span aria-hidden="true">↗</span>
-          </Link>
-          <p className="mt-2 font-heading text-xs italic text-[#707568]">+ $4.95 US shipping · $48.95 total</p>
+          <div id="purchase" className="mt-0 pt-4">
+            {canceled && <p role="status" className="mb-5 border-l-2 border-[#777b6b] pl-3 font-heading text-sm">Checkout was canceled. Your card was not charged. You can try again whenever you’re ready.</p>}
+            <fieldset>
+              <legend className="font-heading text-base">Select your size</legend>
+              <div className="mt-3 grid grid-cols-4 gap-2">
+                {SIZES.map((option) => (
+                  <button key={option} type="button" aria-pressed={size === option} onClick={() => setSize(option)} className={`min-h-12 border font-heading text-base transition ${size === option ? "border-[#32382f] bg-[#3c4237] text-white" : "border-[#777b6b]/50 hover:border-[#32382f]"}`}>{option}</button>
+                ))}
+              </div>
+            </fieldset>
+            <p className="mt-4 font-heading text-sm text-[#55594e]">$44 shirt + $4.95 standard US shipping</p>
+            <p className="mt-3 font-heading text-sm leading-relaxed text-[#55594e]">Content note: Your assigned file could be an ordinary email or court document, or contain potentially distressing references. Which file you will get is a surprise.</p>
+            {error && <p role="alert" className="mt-4 border-l-2 border-[#a33d3d] pl-3 font-heading text-sm text-[#a33d3d]">{error}</p>}
+            <button type="button" disabled={!size || loading} onClick={purchase} className="menu-buy-button mt-5 flex min-h-16 w-full items-center justify-between px-4 py-2 font-heading text-base disabled:cursor-not-allowed disabled:opacity-50">
+              <span>{loading ? "Opening secure checkout…" : "Checkout"}</span><span aria-hidden="true">↗</span>
+            </button>
+          </div>
         </article>
 
       </section>
@@ -65,11 +106,7 @@ function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
         <h2 className="menu-heading text-[clamp(2rem,3.8vw,3rem)] leading-none">the fine print</h2>
         <p className="mt-5 font-heading text-sm leading-relaxed text-[#55594e]">One shirt per order. Printed to order and shipped within the US. Stripe securely collects payment and delivery details. The file is assigned after checkout. The front of the shirt displays page 1 of every pdf in the DOJ released Epstein files, the back of the shirt displays the file number. </p>
         <p className="mt-4 font-heading text-sm italic leading-relaxed text-[#55594e]">Keep the conversation alive. Protect survivors. Demand the truth.</p>
-        <button type="button" onClick={onEasterEgg} className="mt-8 border-b border-[#55594e] pb-1 font-heading text-sm italic text-[#55594e] hover:text-black">
-          One more thing from the archive ↗
-        </button>
-        {filmNotice && <p role="status" className="mt-3 font-heading text-sm">{filmNotice}</p>}
-        <p className="mt-10 font-heading text-xs italic text-[#8a8e80]">E-Files · End of menu</p>
+        <p className="mt-8 font-heading text-xs italic text-[#8a8e80]">E-Files · End of menu</p>
       </footer>
         </div>
       </div>
@@ -78,15 +115,14 @@ function SpecialsCatalog({ onEasterEgg, filmNotice, scrollRef }: {
 }
 
 export default function HomePage() {
-  const [videoSrc, setVideoSrc] = useState(INTRO_VIDEO);
   const [showMenu, setShowMenu] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [filmNotice, setFilmNotice] = useState("");
+  const [checkoutReturn, setCheckoutReturn] = useState<{ canceled: boolean; size: ShirtSize | null }>({ canceled: false, size: null });
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLElement>(null);
   const catalogRef = useRef<HTMLDivElement>(null);
-  const menuVisible = showMenu || (isMobile && videoSrc === INTRO_VIDEO);
+  const menuVisible = showMenu || isMobile;
 
   useEffect(() => {
     const mobile = window.matchMedia("(max-width: 767px)");
@@ -108,8 +144,21 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("canceled") !== "1") return;
+    const size = query.get("size");
+    setCheckoutReturn({ canceled: true, size: isShirtSize(size) ? size : null });
+    videoRef.current?.pause();
+    setShowMenu(true);
+  }, []);
+
+  useEffect(() => {
     overlayRef.current?.toggleAttribute("inert", !menuVisible);
-  }, [menuVisible]);
+    if (!menuVisible || !checkoutReturn.canceled) return;
+    const scroll = catalogRef.current;
+    const purchase = scroll?.querySelector<HTMLElement>("#purchase");
+    if (scroll && purchase) scroll.scrollTop += purchase.getBoundingClientRect().top - scroll.getBoundingClientRect().top - 24;
+  }, [menuVisible, checkoutReturn.canceled]);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -149,39 +198,21 @@ export default function HomePage() {
     };
   }, [menuVisible]);
 
-  function playEasterEgg() {
-    setFilmNotice("");
-    setShowMenu(false);
-    if (videoSrc === EASTER_VIDEO && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      void videoRef.current.play().catch(() => setShowMenu(true));
-    } else {
-      setVideoSrc(EASTER_VIDEO);
-    }
-  }
-
   return (
     <main ref={stageRef} className="menu-stage flex h-screen w-screen items-center justify-center overflow-hidden bg-black text-white">
       <div className="relative flex aspect-video w-full max-h-full max-w-[177.777vh] items-center justify-center max-md:aspect-auto max-md:h-full max-md:max-w-none">
         <video
-          key={videoSrc}
           ref={videoRef}
-          src={videoSrc}
+          src={INTRO_VIDEO}
           autoPlay
           muted
           playsInline
           preload="auto"
-          aria-label={videoSrc === INTRO_VIDEO ? "E-Files opening animation" : "E-Files hidden film"}
+          aria-label="E-Files opening animation"
           onEnded={() => setShowMenu(true)}
-          onError={() => {
-            setShowMenu(true);
-            if (videoSrc === EASTER_VIDEO) {
-              setFilmNotice("The hidden reel is not ready yet. Check back soon.");
-              setVideoSrc(INTRO_VIDEO);
-            }
-          }}
+          onError={() => setShowMenu(true)}
           style={{ imageRendering: "pixelated" }}
-          className={`absolute inset-0 h-full w-full object-contain ${isMobile && videoSrc === INTRO_VIDEO ? "hidden" : ""}`}
+          className={`absolute inset-0 h-full w-full object-contain ${isMobile ? "hidden" : ""}`}
         />
 
         {!menuVisible && (
@@ -200,7 +231,7 @@ export default function HomePage() {
             <div className="absolute left-0 top-1/2 h-[83.333333%] w-[59.642147%] -translate-y-1/2 max-md:relative max-md:top-auto max-md:h-[94%] max-md:w-[min(88%,480px)] max-md:translate-y-0">
               <Image src="/paperclip-back.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute -left-5 top-10 z-0 h-auto w-32 max-md:hidden" />
               <div className="specials-cardstock specials-sheet-shadow absolute inset-0 z-10 rounded-sm">
-                <SpecialsCatalog onEasterEgg={playEasterEgg} filmNotice={filmNotice} scrollRef={catalogRef} />
+                <SpecialsCatalog scrollRef={catalogRef} canceled={checkoutReturn.canceled} returnSize={checkoutReturn.size} />
               </div>
               <Image src="/paperclip.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute -left-5 top-10 z-20 h-auto w-32 max-md:hidden" />
             </div>

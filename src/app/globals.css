@@ -262,6 +262,10 @@ body:has(.menu-stage) {
   background-size: 160px 160px, 100% 100%;
 }
 
+.order-cardstock {
+  background-color: #f1f1ec;
+}
+
 .specials-sheet-shadow {
   box-shadow: 2px 2px 2px rgba(42, 45, 37, 0.22), 4px 6px 8px rgba(42, 45, 37, 0.05);
 }
@@ -276,14 +280,15 @@ body:has(.menu-stage) {
 }
 
 .menu-buy-button {
-  border: 1px solid #606759;
-  background: transparent;
-  color: #32382f;
+  /* border: 1px solid #ffffff; */
+  background: #e55656f0;
+  color: #f6f6ee;
+  font-size: 1.5rem;
   transition: background-color 180ms ease, color 180ms ease;
 }
 
 .menu-buy-button:hover {
-  background: #3c4237;
+  background: #ea4b4bfc;
   color: #f6f6ee;
 }
 

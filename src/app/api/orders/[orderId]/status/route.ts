@@ -6,6 +6,7 @@ import { getDocumentClient } from "@/lib/server/aws";
 export const runtime = "nodejs";
 
 const ORDER_ID_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
+const SOURCE_KEY_PATTERN = /^VOL(\d{5})\/EFTA\d{8}\.pdf$/;
 
 type RouteContext = {
   params: { orderId: string };
@@ -36,7 +37,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
         KeyConditionExpression: "OrderID = :orderId",
         ExpressionAttributeValues: { ":orderId": orderId },
         ProjectionExpression:
-          "OrderID, #status, UpdatedAt, FileID, PrintfulStatus, ShirtSize",
+          "OrderID, #status, UpdatedAt, PrintfulStatus, ShirtSize, S3Key",
         ExpressionAttributeNames: { "#status": "Status" },
         Limit: 1,
       }),
@@ -48,8 +49,15 @@ export async function GET(_request: Request, { params }: RouteContext) {
     }
 
     const status = isOrderStatus(item.Status) ? item.Status : "PENDING";
-    const response: Record<string, string> = { orderId, status };
+    const response: Record<string, string | number> = { orderId, status };
 
+    if ((status === "SOLD" || status === "DRAFT_ONLY") && typeof item.S3Key === "string") {
+      const match = SOURCE_KEY_PATTERN.exec(item.S3Key);
+      if (match) {
+        const volume = Number(match[1]);
+        if (volume >= 1 && volume <= 12) response.volume = volume;
+      }
+    }
     if (typeof item.UpdatedAt === "string") {
       response.updatedAt = item.UpdatedAt;
     }
@@ -59,13 +67,6 @@ export async function GET(_request: Request, { params }: RouteContext) {
     if (typeof item.PrintfulStatus === "string") {
       response.fulfillmentStatus = item.PrintfulStatus;
     }
-    if (
-      (status === "SOLD" || status === "DRAFT_ONLY") &&
-      typeof item.FileID === "string"
-    ) {
-      response.fileId = item.FileID;
-    }
-
     return NextResponse.json(response);
   } catch (error) {
     console.error("Unable to query order status", error);

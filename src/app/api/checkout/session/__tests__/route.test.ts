@@ -74,7 +74,7 @@ test("creates a fixed-price hosted Checkout Session", async () => {
       },
     },
     success_url: `http://localhost:3000/orders/${body.orderId}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: "http://localhost:3000/checkout?canceled=1",
+    cancel_url: "http://localhost:3000/?canceled=1&size=M",
   });
   expect(options.idempotencyKey).toMatch(/^[a-f0-9]{32}$/);
 });
