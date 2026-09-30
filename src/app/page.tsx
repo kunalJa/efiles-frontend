@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { LEGAL_LINKS, SupportEmail } from "@/components/LegalSheet";
 import ProductImageCarousel, { type ProductImage } from "@/components/ProductImageCarousel";
 import { SIZES, isShirtSize, type ShirtSize } from "@/lib/constants";
 
@@ -72,7 +74,7 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
 
       <section className="border-t border-[#777b6b]/35 py-8" aria-labelledby="collection-heading">
         <h2 id="collection-heading" className="menu-heading text-center text-[clamp(2.3rem,4.2vw,3.6rem)] leading-none">what file will you get?</h2>
-        <p className="mt-2 text-center font-heading text-sm italic text-[#696d60]">Each shirt will uniquely display one of over 1 million Epstein files. You alone will have that file and its unique file number on the back.</p>
+        <p className="mt-2 text-center font-heading text-sm italic text-[#696d60]">Each shirt will uniquely display one of the over 1 million Epstein files. You will have a random file and its unique file number on the back.</p>
 
         <article className="mt-9 border-t border-[#777b6b]/35 pt-6">
           <p className="mt-2 font-heading text-sm italic text-[#747869]">1 of 1 · White Gildan 5000 tee</p>
@@ -97,6 +99,7 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
             <button type="button" disabled={!size || loading} onClick={purchase} className="menu-buy-button mt-5 flex min-h-16 w-full items-center justify-between px-4 py-2 font-heading text-base disabled:cursor-not-allowed disabled:opacity-50">
               <span>{loading ? "Opening secure checkout…" : "Checkout"}</span><span aria-hidden="true">↗</span>
             </button>
+            <p className="mt-3 font-heading text-xs leading-relaxed text-[#707568]">All sales are final; refunds only if your order fails to ship. By checking out, you agree to our <Link href="/terms" className="underline">Terms of Service</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
           </div>
         </article>
 
@@ -104,8 +107,12 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
 
       <footer className="border-t border-[#777b6b]/35 pb-5 pt-8 text-center">
         <h2 className="menu-heading text-[clamp(2rem,3.8vw,3rem)] leading-none">the fine print</h2>
-        <p className="mt-5 font-heading text-sm leading-relaxed text-[#55594e]">One shirt per order. Printed to order and shipped within the US. Stripe securely collects payment and delivery details. The file is assigned after checkout. The front of the shirt displays page 1 of every pdf in the DOJ released Epstein files, the back of the shirt displays the file number. </p>
-        <p className="mt-4 font-heading text-sm italic leading-relaxed text-[#55594e]">Keep the conversation alive. Protect survivors. Demand the truth.</p>
+        <ul className="mt-5 space-y-2 font-heading text-sm text-[#55594e]">
+          {LEGAL_LINKS.map((link) => (
+            <li key={link.href}><Link href={link.href} className="border-b border-[#55594e]/60 pb-0.5 hover:text-black">{link.label}</Link></li>
+          ))}
+          <li>Contact: <SupportEmail /></li>
+        </ul>
         <p className="mt-8 font-heading text-xs italic text-[#8a8e80]">E-Files · End of menu</p>
       </footer>
         </div>

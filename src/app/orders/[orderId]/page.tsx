@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { LEGAL_LINKS, SupportEmail } from "@/components/LegalSheet";
 import {
   STATUS_MESSAGES,
   TERMINAL_STATUSES,
@@ -210,9 +211,17 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
 
             <aside className="mt-8 border-t border-[#777b6b]/35 pt-6 font-heading text-sm leading-relaxed text-[#55594e]">
               <h2 className="menu-heading text-3xl text-[#32352e]">a note before it arrives</h2>
-              <p className="mt-3">Some files are mundane emails or court documents. Others may contain references to victims, redacted victim material, or images of alleged abusers. The assigned file is not disclosed on this page.</p>
+              <p className="mt-3">Some files are mundane emails or court documents. Others may contain images of people who appear in the files. The assigned file is not disclosed on this page.</p>
             </aside>
             <Link href="/" className="menu-buy-button mt-8 inline-flex min-h-11 w-full items-center justify-between px-4 py-2 font-heading text-base"><span>Buy another shirt</span><span aria-hidden="true">↗</span></Link>
+            <footer className="mt-10 border-t border-[#777b6b]/35 pt-6 text-center font-heading text-sm text-[#55594e]">
+              <p>Questions? Email <SupportEmail /> with your order reference.</p>
+              <ul className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2">
+                {LEGAL_LINKS.map((link) => (
+                  <li key={link.href}><Link href={link.href} className="border-b border-[#55594e] pb-0.5 hover:text-black">{link.label}</Link></li>
+                ))}
+              </ul>
+            </footer>
           </div>
         </div>
         <Image src="/paperclip.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute left-1 top-6 z-20 hidden h-auto w-32 md:block" />
