@@ -7,7 +7,7 @@ import { LEGAL_LINKS, SupportEmail } from "@/components/LegalSheet";
 import ProductImageCarousel, { type ProductImage } from "@/components/ProductImageCarousel";
 import { SIZES, isShirtSize, type ShirtSize } from "@/lib/constants";
 
-const INTRO_VIDEO = "/intro-animation.mp4?v=desktop-final-1";
+const INTRO_VIDEO = "/intro-animation-h264.mp4";
 const PRODUCT_IMAGES = [
   { src: "/eft01_question_front.png?v=photos-2", alt: "White Mystery File shirt front with question mark design", label: "Mystery front", width: 2241, height: 2304 },
   { src: "/eft01_front.png?v=photos-2", alt: "White Mystery File shirt front with document print", label: "Document front", width: 2241, height: 2304 },
@@ -219,11 +219,11 @@ export default function HomePage() {
           onEnded={() => setShowMenu(true)}
           onError={() => setShowMenu(true)}
           style={{ imageRendering: "pixelated" }}
-          className={`absolute inset-0 h-full w-full object-contain ${isMobile ? "hidden" : ""}`}
+          className="absolute inset-0 h-full w-full object-contain max-md:hidden"
         />
 
         {!menuVisible && (
-          <button type="button" onClick={() => { videoRef.current?.pause(); setShowMenu(true); }} className="absolute bottom-6 right-6 z-20 border border-white/50 bg-black/60 px-4 py-2 font-mono text-xs uppercase tracking-widest text-white hover:bg-black" aria-label="Skip film and open the menu">
+          <button type="button" onClick={() => { videoRef.current?.pause(); setShowMenu(true); }} className="absolute bottom-6 right-6 z-20 border border-white/50 bg-black/60 px-4 py-2 font-mono text-xs uppercase tracking-widest text-white hover:bg-black max-md:hidden" aria-label="Skip film and open the menu">
             Skip film ↗
           </button>
         )}
@@ -231,7 +231,7 @@ export default function HomePage() {
         <div
           ref={overlayRef}
           aria-hidden={!menuVisible}
-          className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-700 ${menuVisible ? "scale-100 opacity-100" : "pointer-events-none opacity-0"}`}
+          className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-700 max-md:scale-100 max-md:opacity-100 max-md:pointer-events-auto ${menuVisible ? "scale-100 opacity-100" : "pointer-events-none opacity-0"}`}
         >
           <div className="relative flex h-full aspect-[1006/1080] items-center justify-center shadow-2xl max-md:aspect-auto max-md:w-full max-md:shadow-none">
             <Image src="/background-menu.jpg?v=menu-2" alt="" fill unoptimized priority className="pointer-events-none absolute inset-0 h-full w-full object-cover max-md:hidden" />
