@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { LEGAL_LINKS, SupportEmail } from "@/components/LegalSheet";
 import ProductImageCarousel, { type ProductImage } from "@/components/ProductImageCarousel";
 import { SIZES, isShirtSize, type ShirtSize } from "@/lib/constants";
 
 const INTRO_VIDEO = "/intro-animation-h264.mp4";
+const MOBILE_INTRO_VIDEO = "/mobile-intro.mp4?v=mobile-oct-1";
 const PRODUCT_IMAGES = [
   { src: "/eft01_question_front.png?v=photos-2", alt: "White Mystery File shirt front with question mark design", label: "Mystery front", width: 2241, height: 2304 },
   { src: "/eft01_front.png?v=photos-2", alt: "White Mystery File shirt front with document print", label: "Document front", width: 2241, height: 2304 },
@@ -123,22 +124,44 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
 
 export default function HomePage() {
   const [showMenu, setShowMenu] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [checkoutReturn, setCheckoutReturn] = useState<{ canceled: boolean; size: ShirtSize | null }>({ canceled: false, size: null });
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLElement>(null);
   const catalogRef = useRef<HTMLDivElement>(null);
-  const menuVisible = showMenu || isMobile;
+  const menuVisible = showMenu;
+
+  const setMobileVideoRef = useCallback((video: HTMLVideoElement | null) => {
+    mobileVideoRef.current = video;
+    if (video) {
+      video.defaultMuted = true;
+      video.muted = true;
+      video.setAttribute("muted", "");
+    }
+  }, []);
+
+  const playMobileIntro = useCallback(() => {
+    const video = mobileVideoRef.current;
+    if (!video || showMenu || !window.matchMedia("(max-width: 767px)").matches || video.ended) return;
+    video.muted = true;
+    void video.play().catch(() => {});
+  }, [showMenu]);
 
   useEffect(() => {
     const mobile = window.matchMedia("(max-width: 767px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const syncViewport = () => {
-      setIsMobile(mobile.matches);
-      if (mobile.matches || reducedMotion.matches) {
-        setShowMenu(true);
+      if (mobile.matches) {
         videoRef.current?.pause();
+        if (mobileVideoRef.current?.ended) setShowMenu(true);
+        else playMobileIntro();
+      } else {
+        mobileVideoRef.current?.pause();
+        if (reducedMotion.matches) {
+          setShowMenu(true);
+          videoRef.current?.pause();
+        }
       }
     };
     syncViewport();
@@ -148,7 +171,7 @@ export default function HomePage() {
       mobile.removeEventListener("change", syncViewport);
       reducedMotion.removeEventListener("change", syncViewport);
     };
-  }, []);
+  }, [playMobileIntro]);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -156,6 +179,7 @@ export default function HomePage() {
     const size = query.get("size");
     setCheckoutReturn({ canceled: true, size: isShirtSize(size) ? size : null });
     videoRef.current?.pause();
+    mobileVideoRef.current?.pause();
     setShowMenu(true);
   }, []);
 
@@ -216,14 +240,27 @@ export default function HomePage() {
           playsInline
           preload="auto"
           aria-label="E-Files opening animation"
-          onEnded={() => setShowMenu(true)}
-          onError={() => setShowMenu(true)}
+          onEnded={() => { if (!window.matchMedia("(max-width: 767px)").matches) setShowMenu(true); }}
+          onError={() => { if (!window.matchMedia("(max-width: 767px)").matches) setShowMenu(true); }}
           style={{ imageRendering: "pixelated" }}
           className="absolute inset-0 h-full w-full object-contain max-md:hidden"
         />
+        <video
+          ref={setMobileVideoRef}
+          src={MOBILE_INTRO_VIDEO}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          aria-label="E-Files mobile opening animation"
+          onCanPlay={playMobileIntro}
+          onEnded={() => { if (window.matchMedia("(max-width: 767px)").matches) setShowMenu(true); }}
+          onError={() => { if (window.matchMedia("(max-width: 767px)").matches) setShowMenu(true); }}
+          className="absolute inset-0 hidden h-full w-full object-cover max-md:block"
+        />
 
         {!menuVisible && (
-          <button type="button" onClick={() => { videoRef.current?.pause(); setShowMenu(true); }} className="absolute bottom-6 right-6 z-20 border border-white/50 bg-black/60 px-4 py-2 font-mono text-xs uppercase tracking-widest text-white hover:bg-black max-md:hidden" aria-label="Skip film and open the menu">
+          <button type="button" onClick={() => { videoRef.current?.pause(); mobileVideoRef.current?.pause(); setShowMenu(true); }} className="absolute bottom-6 right-6 z-20 border border-white/50 bg-black/60 px-4 py-2 font-mono text-xs uppercase tracking-widest text-white hover:bg-black" aria-label="Skip film and open the menu">
             Skip film ↗
           </button>
         )}
@@ -231,7 +268,7 @@ export default function HomePage() {
         <div
           ref={overlayRef}
           aria-hidden={!menuVisible}
-          className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-700 max-md:scale-100 max-md:opacity-100 max-md:pointer-events-auto ${menuVisible ? "scale-100 opacity-100" : "pointer-events-none opacity-0"}`}
+          className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-700 ${menuVisible ? "scale-100 opacity-100" : "pointer-events-none opacity-0"}`}
         >
           <div className="relative flex h-full aspect-[1006/1080] items-center justify-center shadow-2xl max-md:aspect-auto max-md:w-full max-md:shadow-none">
             <Image src="/background-menu.jpg?v=menu-2" alt="" fill unoptimized priority className="pointer-events-none absolute inset-0 h-full w-full object-cover max-md:hidden" />
