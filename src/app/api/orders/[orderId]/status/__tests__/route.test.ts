@@ -46,7 +46,6 @@ test("returns pending with 202 before Lambda claims an inventory row", async () 
     KeyConditionExpression: "OrderID = :orderId",
     ExpressionAttributeValues: { ":orderId": orderId },
     ProjectionExpression: "OrderID, #status, UpdatedAt, PrintfulStatus, PrintfulOrderID, ShirtSize, S3Key",
-    Limit: 1,
   });
 });
 
@@ -82,6 +81,19 @@ test("returns sanitized lifecycle fields without revealing the assigned file", a
     fulfillmentStatus: "pending",
     volume: 9,
   });
+});
+
+test("uses the completed row instead of a duplicate unfinished inventory claim", async () => {
+  delete process.env.PRINTFUL_STATUS_TOKEN;
+  sendQuery.mockResolvedValue({ Items: [
+    { OrderID: orderId, Status: "PROCESSING", S3Key: "VOL00001/EFTA00000001.pdf" },
+    { OrderID: orderId, Status: "SOLD", ShirtSize: "M", PrintfulStatus: "pending", S3Key: "VOL00009/EFTA00505541.pdf" },
+  ] });
+
+  const response = await GET(new Request("http://localhost"), { params: { orderId } });
+
+  expect(await response.json()).toEqual({ orderId, status: "SOLD", shirtSize: "M", fulfillmentStatus: "pending", volume: 9 });
+  expect(sendQuery.mock.calls[0][0].input.Limit).toBeUndefined();
 });
 
 test("reveals only a volume for a completed draft order", async () => {

@@ -145,6 +145,25 @@ test("rejects an invalid Stripe signature before side effects", async () => {
   expect(sendLambda).not.toHaveBeenCalled();
 });
 
+test("the real Stripe verifier rejects altered payloads and expired replay signatures", async () => {
+  const verifier = new Stripe("sk_test_audit", { apiVersion: "2023-10-16" });
+  constructEvent.mockImplementation(verifier.webhooks.constructEvent.bind(verifier.webhooks));
+  const payload = JSON.stringify({ type: "checkout.session.completed", data: { object: { id: "cs_test_123" } } });
+  const validSignature = verifier.webhooks.generateTestHeaderString({ payload, secret: "whsec_test" });
+  const expiredSignature = verifier.webhooks.generateTestHeaderString({
+    payload, secret: "whsec_test", timestamp: Math.floor(Date.now() / 1000) - 600,
+  });
+
+  for (const [body, signature] of [[`${payload} `, validSignature], [payload, expiredSignature]]) {
+    const response = await POST(new Request("http://localhost/api/webhooks/stripe", {
+      method: "POST", headers: { "stripe-signature": signature }, body,
+    }));
+    expect(response.status).toBe(400);
+  }
+  expect(retrieveSession).not.toHaveBeenCalled();
+  expect(sendLambda).not.toHaveBeenCalled();
+});
+
 test("rejects tampered authoritative checkout values", async () => {
   retrieveSession.mockResolvedValue({ ...validSession(), amount_total: 1 });
 

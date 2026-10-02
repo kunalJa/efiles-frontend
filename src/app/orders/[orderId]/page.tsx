@@ -181,7 +181,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
 
             {(isComplete || order.status === "DRAFT_ONLY") && order.volume && (
               <div className="mt-8 border-t border-[#777b6b]/35 pt-6 text-center font-heading">
-                <p className="text-xs uppercase tracking-[0.2em] text-[#696d60]">a clue from the archive</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#696d60]">"At least tell me what data set my shirt will be from!"</p>
                 <p className="menu-heading mt-3 text-[clamp(2.7rem,7vw,4rem)] leading-none">Data Set {order.volume}</p>
                 <p className="mt-4 text-sm leading-relaxed text-[#55594e]">
                   {isComplete
@@ -228,7 +228,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
 
             <aside className="mt-8 border-t border-[#777b6b]/35 pt-6 font-heading text-sm leading-relaxed text-[#55594e]">
               <h2 className="menu-heading text-3xl text-[#32352e]">a note before it arrives</h2>
-              <p className="mt-3">Some files are mundane emails or court documents. Others may contain images of people who appear in the files. The assigned file is not disclosed on this page.</p>
+              <p className="mt-3">Some files are mundane emails or court documents. Others may contain images of people who appear in the files or many other interesting things. The file may not be suitable to printing on a shirt, or may have font or detail that becomes illegible when printed on a t-shirt.</p>
             </aside>
             <Link href="/" className="menu-buy-button mt-8 inline-flex min-h-11 w-full items-center justify-between px-4 py-2 font-heading text-base"><span>Buy another shirt</span><span aria-hidden="true">↗</span></Link>
             <footer className="mt-10 border-t border-[#777b6b]/35 pt-6 text-center font-heading text-sm text-[#55594e]">

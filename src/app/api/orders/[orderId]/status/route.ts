@@ -50,10 +50,12 @@ export async function GET(_request: Request, { params }: RouteContext) {
         ProjectionExpression:
           "OrderID, #status, UpdatedAt, PrintfulStatus, PrintfulOrderID, ShirtSize, S3Key",
         ExpressionAttributeNames: { "#status": "Status" },
-        Limit: 1,
       }),
     );
-    const item = result.Items?.[0];
+    const items = result.Items || [];
+    const item = items.find((item) => item.Status === "SOLD" || item.Status === "DRAFT_ONLY")
+      || items.find((item) => item.Status === "FAILED" || item.Status === "REFUNDED_FAILED")
+      || items[0];
 
     if (!item) {
       return NextResponse.json({ orderId, status: "PENDING" }, { status: 202 });
