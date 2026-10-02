@@ -119,9 +119,12 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
 
   return (
     <main className="min-h-screen bg-[#d7d8ce] text-[#32352e]">
-      <nav className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-5 font-heading text-sm">
-        <Link href="/" className="border-b border-[#55594e] pb-1">Back to store</Link>
-        <span className="italic text-[#55594e]">Order reference: {params.orderId}</span>
+      <nav className="mx-auto grid w-full max-w-5xl grid-cols-[auto_minmax(0,1fr)] items-start gap-3 px-4 py-5 font-heading text-sm sm:flex sm:items-center sm:justify-between sm:px-6">
+        <Link href="/" className="shrink-0 whitespace-nowrap border-b border-[#55594e] pb-1">Back to store</Link>
+        <span className="min-w-0 text-right italic text-[#55594e]">
+          <span className="block sm:inline">Order reference:</span>{" "}
+          <span className="block break-all font-mono text-xs not-italic sm:inline sm:font-heading sm:text-sm sm:italic">{params.orderId}</span>
+        </span>
       </nav>
 
       <section className="relative mx-auto w-full max-w-3xl px-4 pb-16 sm:px-6">
@@ -177,7 +180,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
             </p>
 
             {(isComplete || order.status === "DRAFT_ONLY") && order.volume && (
-              <div className="mt-8 border-y border-[#777b6b]/35 py-6 text-center font-heading">
+              <div className="mt-8 border-t border-[#777b6b]/35 pt-6 text-center font-heading">
                 <p className="text-xs uppercase tracking-[0.2em] text-[#696d60]">a clue from the archive</p>
                 <p className="menu-heading mt-3 text-[clamp(2.7rem,7vw,4rem)] leading-none">Data Set {order.volume}</p>
                 <p className="mt-4 text-sm leading-relaxed text-[#55594e]">
@@ -188,7 +191,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
               </div>
             )}
 
-            <div aria-live="polite" className="mt-9 border-y border-[#777b6b]/35 py-5 font-heading">
+            <div aria-live="polite" className="mt-9 border-t border-[#777b6b]/35 pt-5 font-heading">
               <p className="text-xs uppercase tracking-widest text-[#696d60]">Order status</p>
               <p className="mt-2 text-lg">{statusUnavailable ? "Unable to check order status" : order.status === "PENDING" ? "Checking your order" : STATUS_MESSAGES[order.status]}</p>
               {!TERMINAL_STATUSES.has(order.status) && <p className="mt-2 text-sm text-[#55594e]">This page updates automatically. You can return using this link.</p>}
