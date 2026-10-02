@@ -11,7 +11,7 @@ export const QUANTITY = 1;
 export const SHIPPING_METHOD = "STANDARD";
 export const PRICING_VERSION = "usd-us-fixed-v1";
 
-export const SUPPORT_EMAIL = "REPLACE_WITH_SUPPORT_EMAIL";
+export const SUPPORT_EMAIL = "support@mysteryfile.store";
 export const LEGAL_LAST_UPDATED = "September 30, 2026";
 
 export const ORDER_STATUSES = [

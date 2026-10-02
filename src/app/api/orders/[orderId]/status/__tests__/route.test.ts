@@ -4,11 +4,17 @@ import { GET } from "../route";
 jest.mock("@/lib/server/aws", () => ({ getDocumentClient: jest.fn() }));
 
 const sendQuery = jest.fn();
+const printfulFetch = jest.fn();
 const orderId = "0123456789abcdef0123456789abcdef";
 
 beforeEach(() => {
   process.env.AWS_DYNAMO_DB_NAME = "kz-pdf-files-db";
   process.env.AWS_ORDER_ID_INDEX_NAME = "OrderID-index";
+  process.env.PRINTFUL_STATUS_TOKEN = "test-token";
+  delete process.env.PRINTFUL_STORE_ID;
+  sendQuery.mockReset();
+  printfulFetch.mockReset();
+  global.fetch = printfulFetch;
   jest.mocked(getDocumentClient).mockReturnValue({
     send: sendQuery,
   } as unknown as ReturnType<typeof getDocumentClient>);
@@ -39,12 +45,13 @@ test("returns pending with 202 before Lambda claims an inventory row", async () 
     IndexName: "OrderID-index",
     KeyConditionExpression: "OrderID = :orderId",
     ExpressionAttributeValues: { ":orderId": orderId },
-    ProjectionExpression: "OrderID, #status, UpdatedAt, PrintfulStatus, ShirtSize, S3Key",
+    ProjectionExpression: "OrderID, #status, UpdatedAt, PrintfulStatus, PrintfulOrderID, ShirtSize, S3Key",
     Limit: 1,
   });
 });
 
 test("returns sanitized lifecycle fields without revealing the assigned file", async () => {
+  delete process.env.PRINTFUL_STATUS_TOKEN;
   sendQuery.mockResolvedValue({
     Items: [
       {
@@ -111,6 +118,68 @@ test("does not expose a file ID or volume before completion or on failure", asyn
 
     expect(await response.json()).toEqual({ orderId, status });
   }
+});
+
+test("fetches live Printful shipments server-side without exposing private fields", async () => {
+  process.env.PRINTFUL_STORE_ID = "77";
+  sendQuery.mockResolvedValue({ Items: [{ Status: "SOLD", PrintfulOrderID: 12345 }] });
+  printfulFetch.mockResolvedValue({ ok: true, json: async () => ({ code: 200, result: {
+    external_id: orderId, status: "fulfilled",
+    shipments: [{ carrier: "USPS", tracking_number: "123", tracking_url: "https://tracking.example/123", items: ["private"] },
+      { tracking_url: "javascript:alert(1)" }],
+    recipient: { email: "private@example.com" },
+  } }) });
+
+  const response = await GET(new Request("http://localhost"), { params: { orderId } });
+
+  expect(await response.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "fulfilled",
+    shipments: [{ carrier: "USPS", trackingNumber: "123", trackingUrl: "https://tracking.example/123" }] });
+  expect(printfulFetch).toHaveBeenCalledWith("https://api.printful.com/orders/12345", expect.objectContaining({
+    headers: expect.objectContaining({ Authorization: "Bearer test-token", "X-PF-Store-Id": "77" }),
+    cache: "no-store",
+  }));
+  expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+});
+
+test("falls back to stored status when Printful is unavailable or the order does not match", async () => {
+  sendQuery.mockResolvedValue({ Items: [{ Status: "SOLD", PrintfulOrderID: 12345, PrintfulStatus: "pending" }] });
+  const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+  try {
+    printfulFetch.mockRejectedValueOnce(new Error("Printful unavailable"));
+    const unavailable = await GET(new Request("http://localhost"), { params: { orderId } });
+    expect(await unavailable.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "pending" });
+    printfulFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ code: 200, result: {
+      external_id: "someone-else", status: "fulfilled", shipments: [{ tracking_url: "https://tracking.example/private" }],
+    } }) });
+    const mismatched = await GET(new Request("http://localhost"), { params: { orderId } });
+    expect(await mismatched.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "pending" });
+  } finally {
+    consoleError.mockRestore();
+  }
+});
+
+test("does not send a Printful store display name as the store ID", async () => {
+  process.env.PRINTFUL_STORE_ID = "mysteryfile";
+  sendQuery.mockResolvedValue({ Items: [{ Status: "SOLD", PrintfulOrderID: 12345, PrintfulStatus: "pending" }] });
+  const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+
+  try {
+    const response = await GET(new Request("http://localhost"), { params: { orderId } });
+    expect(await response.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "pending" });
+    expect(printfulFetch).not.toHaveBeenCalled();
+    expect(consoleError).toHaveBeenCalledWith("Unable to retrieve live fulfillment status", expect.objectContaining({
+      message: "PRINTFUL_STORE_ID must be numeric, not the store name",
+    }));
+  } finally {
+    consoleError.mockRestore();
+  }
+});
+
+test("does not call Printful for an unfinished order", async () => {
+  sendQuery.mockResolvedValue({ Items: [{ Status: "PROCESSING", PrintfulOrderID: 12345 }] });
+  await GET(new Request("http://localhost"), { params: { orderId } });
+  expect(printfulFetch).not.toHaveBeenCalled();
 });
 
 test("rejects an invalid order ID without querying DynamoDB", async () => {

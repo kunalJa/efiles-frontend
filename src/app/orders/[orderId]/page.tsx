@@ -17,6 +17,7 @@ type OrderResponse = {
   updatedAt?: string;
   shirtSize?: string;
   fulfillmentStatus?: string;
+  shipments?: { carrier?: string; trackingNumber?: string; trackingUrl?: string }[];
   volume?: number;
 };
 
@@ -66,12 +67,17 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
           updatedAt: result.updatedAt,
           shirtSize: result.shirtSize,
           fulfillmentStatus: result.fulfillmentStatus,
+          shipments: result.shipments,
           volume: result.volume,
         };
         setOrder(nextOrder);
         setNotice("");
 
-        if (TERMINAL_STATUSES.has(nextOrder.status)) return;
+        if (TERMINAL_STATUSES.has(nextOrder.status) && nextOrder.status !== "SOLD") return;
+        if (nextOrder.status === "SOLD") {
+          timeout = setTimeout(poll, 60000);
+          return;
+        }
       } catch (error) {
         if (controller.signal.aborted) return;
         setNotice(error instanceof Error ? error.message : "Unable to retrieve your order");
@@ -187,6 +193,14 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
               <p className="mt-2 text-lg">{statusUnavailable ? "Unable to check order status" : order.status === "PENDING" ? "Checking your order" : STATUS_MESSAGES[order.status]}</p>
               {!TERMINAL_STATUSES.has(order.status) && <p className="mt-2 text-sm text-[#55594e]">This page updates automatically. You can return using this link.</p>}
               {order.shirtSize && <p className="mt-3 text-sm text-[#55594e]">White Gildan 5000 · Size {order.shirtSize}</p>}
+              {isComplete && <p className="mt-3 text-sm text-[#55594e]">Fulfillment: {order.fulfillmentStatus || "Awaiting update"}</p>}
+              {isComplete && !order.shipments?.length && <p className="mt-2 text-sm text-[#55594e]">Tracking will appear here once your order ships. Shipping updates refresh while this page is open.</p>}
+              {order.shipments?.map((shipment, index) => (
+                <div key={index} className="mt-3 text-sm text-[#55594e]">
+                  <p>Shipment {index + 1}{shipment.carrier ? ` · ${shipment.carrier}` : ""}{shipment.trackingNumber ? ` · ${shipment.trackingNumber}` : ""}</p>
+                  {shipment.trackingUrl && <a href={shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="underline">Track shipment</a>}
+                </div>
+              ))}
               <p className="mt-3 break-all text-xs text-[#696d60]">Order reference: {params.orderId}</p>
             </div>
             {notice && <p role="alert" className="mt-5 border-l-2 border-[#a33d3d] pl-3 font-heading text-sm">{notice} We will try again automatically.</p>}
