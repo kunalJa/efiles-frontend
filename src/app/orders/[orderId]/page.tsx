@@ -181,7 +181,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
 
             {(isComplete || order.status === "DRAFT_ONLY") && order.volume && (
               <div className="mt-8 border-t border-[#777b6b]/35 pt-6 text-center font-heading">
-                <p className="text-xs uppercase tracking-[0.2em] text-[#696d60]">"At least tell me what data set my shirt will be from!"</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-[#696d60]">&quot;At least tell me what data set my shirt will be from!&quot;</p>
                 <p className="menu-heading mt-3 text-[clamp(2.7rem,7vw,4rem)] leading-none">Data Set {order.volume}</p>
                 <p className="mt-4 text-sm leading-relaxed text-[#55594e]">
                   {isComplete

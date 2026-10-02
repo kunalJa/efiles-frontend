@@ -8,7 +8,7 @@ import ProductImageCarousel, { type ProductImage } from "@/components/ProductIma
 import { SIZES, isShirtSize, type ShirtSize } from "@/lib/constants";
 
 const INTRO_VIDEO = "/intro-animation-h264.mp4";
-const MOBILE_INTRO_VIDEO = "/mobile-intro.mp4?v=mobile-oct-1";
+const MOBILE_INTRO_VIDEO = "/mobile-intro.mp4?v=mobile-final-oct-2";
 const PRODUCT_IMAGES = [
   { src: "/eft01_question_front.png?v=photos-2", alt: "White Mystery File shirt front with question mark design", label: "Mystery front", width: 2241, height: 2304 },
   { src: "/eft01_front.png?v=photos-2", alt: "White Mystery File shirt front with document print", label: "Document front", width: 2241, height: 2304 },
@@ -53,9 +53,9 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
   return (
     <div ref={scrollRef} className="no-scrollbar absolute inset-0 overflow-y-auto overscroll-contain text-[#32352e] max-md:-left-5 max-md:w-[calc(100%+1.25rem)]">
       <div className="relative min-h-full px-[9%] pb-10 pt-10 sm:pt-12 max-md:pl-[calc(9%+1.25rem)]">
-        <Image src="/paperclip-back.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute left-0 top-10 z-0 hidden h-auto w-32 max-md:block" />
+        <Image src="/paperclip-back.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute left-0 top-8 z-0 hidden h-auto w-32 max-md:block" />
         <div aria-hidden="true" className="specials-cardstock absolute inset-y-0 left-5 right-0 z-10 hidden max-md:block" />
-        <Image src="/paperclip.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute left-0 top-10 z-30 hidden h-auto w-32 max-md:block" />
+        <Image src="/paperclip.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute left-0 top-8 z-30 hidden h-auto w-32 max-md:block" />
         <div className="relative z-20">
       <header className="pb-8 pt-1 text-center">
         <h1 className="menu-heading mt-3 text-[clamp(3.5rem,6vw,5.5rem)] leading-[0.9]">specials</h1>
@@ -272,6 +272,7 @@ export default function HomePage() {
         >
           <div className="relative flex h-full aspect-[1006/1080] items-center justify-center shadow-2xl max-md:aspect-auto max-md:w-full max-md:shadow-none">
             <Image src="/background-menu.jpg?v=menu-2" alt="" fill unoptimized priority className="pointer-events-none absolute inset-0 h-full w-full object-cover max-md:hidden" />
+            <Image src="/mobile-background.jpg?v=scene-oct-2" alt="" fill unoptimized priority className="pointer-events-none absolute inset-0 hidden h-full w-full object-cover max-md:block" />
             <div className="absolute left-0 top-1/2 h-[83.333333%] w-[59.642147%] -translate-y-1/2 max-md:relative max-md:top-auto max-md:h-[94%] max-md:w-[min(88%,480px)] max-md:translate-y-0">
               <Image src="/paperclip-back.svg?v=straight-2" alt="" width={200} height={80} unoptimized className="pointer-events-none absolute -left-5 top-10 z-0 h-auto w-32 max-md:hidden" />
               <div className="specials-cardstock specials-sheet-shadow absolute inset-0 z-10 rounded-sm">
