@@ -230,7 +230,7 @@ export default function HomePage() {
   }, [menuVisible]);
 
   return (
-    <main ref={stageRef} className="menu-stage flex h-screen w-screen items-center justify-center overflow-hidden bg-black text-white">
+    <main ref={stageRef} className={`menu-stage flex h-screen w-screen items-center justify-center overflow-hidden bg-black text-white ${menuVisible ? "max-md:fixed max-md:inset-0 max-md:h-[100dvh]" : ""}`}>
       <div className="relative flex aspect-video w-full max-h-full max-w-[177.777vh] items-center justify-center max-md:aspect-auto max-md:h-full max-md:max-w-none">
         <video
           ref={videoRef}
