@@ -9,7 +9,7 @@ const ORDER_ID_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 const SOURCE_KEY_PATTERN = /^VOL(\d{5})\/EFTA\d{8}\.pdf$/;
 
 type RouteContext = {
-  params: { orderId: string };
+  params: Promise<{ orderId: string }>;
 };
 
 function safeTrackingUrl(value: unknown): string | undefined {
@@ -24,7 +24,7 @@ function safeTrackingUrl(value: unknown): string | undefined {
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
-  const { orderId } = params;
+  const { orderId } = await params;
 
   if (!ORDER_ID_PATTERN.test(orderId)) {
     return NextResponse.json({ error: "Invalid order ID" }, { status: 400 });

@@ -108,7 +108,7 @@ export async function POST(request: Request) {
             pricing_version: PRICING_VERSION,
           },
         },
-        success_url: `${appUrl}/orders/${orderId}?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${appUrl}/orders/${orderId}`,
         cancel_url: `${appUrl}/?canceled=1&size=${size}`,
       },
       { idempotencyKey: checkoutAttemptId },

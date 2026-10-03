@@ -37,11 +37,12 @@ export default function PrivacyPage() {
         <ul className="list-disc space-y-2 pl-6">
           <li><strong>Stripe (payment processing and fraud prevention).</strong> We share, and Stripe collects directly, user data including your name, email address, phone number, billing details, shipping address, payment card information, device information, and IP address. Stripe uses this information to process payments, detect and prevent fraud, and comply with its legal obligations. See the <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="underline">Stripe Privacy Policy</a>.</li>
           <li><strong>Printful (third-party fulfillment center).</strong> We share your name, shipping address, email address, and phone number, along with your order details, with Printful so it can print, package, and ship your order. Printful may share this information with shipping carriers to deliver your package. See the <a href="https://www.printful.com/policies/privacy" target="_blank" rel="noopener noreferrer" className="underline">Printful Privacy Policy</a>.</li>
+          <li><strong>Resend (email delivery).</strong> We share your email address and order details, including your order reference, shirt size, amounts charged, and order-status link, with Resend so it can deliver order confirmation emails. See the <a href="https://resend.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" className="underline">Resend Privacy Policy</a>.</li>
           <li><strong>Infrastructure providers.</strong> Our website is hosted by Vercel, and order records are stored with Amazon Web Services. These providers process technical information and order records on our behalf.</li>
           <li><strong>Legal and safety.</strong> We may disclose information if required by law, subpoena, or court order, or to protect our rights, customers, or others from fraud or harm.</li>
           <li><strong>Business transfers.</strong> If the business is transferred or sold, information may be transferred as part of that transaction, subject to this policy.</li>
         </ul>
-        <p><strong>We do not sell your personal information</strong> or share it for cross-context behavioral advertising. We do not share customer information with World Without Exploitation or any other charity.</p>
+        <p><strong>We do not sell your personal information</strong> or share it for cross-context behavioral advertising. We do not share customer information with any charity or non-profit organization.</p>
       </LegalSection>
 
       <LegalSection id="retention" title="5. retention & security">

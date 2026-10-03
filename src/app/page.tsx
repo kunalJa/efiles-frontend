@@ -16,7 +16,7 @@ const PRODUCT_IMAGES = [
 ] as const satisfies readonly [ProductImage, ...ProductImage[]];
 
 function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
-  scrollRef: RefObject<HTMLDivElement>;
+  scrollRef: RefObject<HTMLDivElement | null>;
   canceled: boolean;
   returnSize: ShirtSize | null;
 }) {
@@ -69,7 +69,7 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
           Public interest and the brave voice of victims are the only reasons the Epstein case, quietly quashed in 2008, continued to be investigated. Without intense public interest, the FBI and the U.S. attorney’s office in Manhattan may never have looked closer in 2018. The facts of the Epstein case are harrowing and yet in 2026 so few people have been held accountable and so few details about this seemingly international criminal system have come to light. The headlines move on, but renewed public interest is all it takes for the sniffing dogs of media to hound after a topic.
         </p>
         <p className="mt-4 font-heading text-[15px] leading-relaxed text-[#4b5045] sm:text-base">
-          This streetwear project is controversial, and ultimately a tiny step towards change, but perhaps we can engage with public curiosity as people ask just what is on our shirts. 100% of Net profits will be donated to <a href="https://www.worldwithoutexploitation.org" target="_blank" rel="noopener noreferrer" className="underline">World Without Exploitation</a>. Consider donating directly instead!
+          This streetwear project is controversial, and ultimately a tiny step towards change, but perhaps we can engage with public curiosity as people ask just what is on our shirts. 100% of <Link href="/terms#charity" className="underline">net profits</Link> will be donated to non-profits fighting human trafficking. Consider donating directly instead!
         </p>
       </section>
 
@@ -100,7 +100,7 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
             <button type="button" disabled={!size || loading} onClick={purchase} className="menu-buy-button mt-5 flex min-h-16 w-full items-center justify-between px-4 py-2 font-heading text-base disabled:cursor-not-allowed disabled:opacity-50">
               <span>{loading ? "Opening secure checkout…" : "Checkout"}</span><span aria-hidden="true">↗</span>
             </button>
-            <p className="mt-3 font-heading text-xs leading-relaxed text-[#707568]">All sales are final; refunds only if your order fails to ship. By checking out, you agree to our <Link href="/terms" className="underline">Terms of Service</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
+            <p className="mt-3 font-heading text-xs leading-relaxed text-[#707568]">All sales are final: no returns or exchanges. Limited exceptions are described in our <Link href="/terms#refunds" className="underline">Refund &amp; Return Policy</Link>. By checking out, you agree to our <Link href="/terms" className="underline">Terms of Service</Link> and <Link href="/privacy" className="underline">Privacy Policy</Link>.</p>
           </div>
         </article>
 

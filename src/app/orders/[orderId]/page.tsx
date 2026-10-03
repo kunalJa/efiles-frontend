@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { LEGAL_LINKS, SupportEmail } from "@/components/LegalSheet";
 import {
   STATUS_MESSAGES,
@@ -29,9 +29,10 @@ const lifecycle = [
   "SOLD",
 ] as const;
 
-export default function OrderPage({ params }: { params: { orderId: string } }) {
+export default function OrderPage({ params }: { params: Promise<{ orderId: string }> }) {
+  const { orderId } = use(params);
   const [order, setOrder] = useState<OrderResponse>({
-    orderId: params.orderId,
+    orderId,
     status: "PENDING",
   });
   const [notice, setNotice] = useState("");
@@ -48,7 +49,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
 
     async function poll() {
       try {
-        const response = await fetch(`/api/orders/${encodeURIComponent(params.orderId)}/status`, {
+        const response = await fetch(`/api/orders/${encodeURIComponent(orderId)}/status`, {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -62,7 +63,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
         }
 
         const nextOrder = {
-          orderId: params.orderId,
+          orderId,
           status: result.status,
           updatedAt: result.updatedAt,
           shirtSize: result.shirtSize,
@@ -94,7 +95,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
       controller.abort();
       if (timeout) clearTimeout(timeout);
     };
-  }, [params.orderId]);
+  }, [orderId]);
 
   async function playReveal() {
     const video = videoRef.current;
@@ -123,7 +124,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
         <Link href="/" className="shrink-0 whitespace-nowrap border-b border-[#55594e] pb-1">Back to store</Link>
         <span className="min-w-0 text-right italic text-[#55594e]">
           <span className="block sm:inline">Order reference:</span>{" "}
-          <span className="block break-all font-mono text-xs not-italic sm:inline sm:font-heading sm:text-sm sm:italic">{params.orderId}</span>
+          <span className="block break-all font-mono text-xs not-italic sm:inline sm:font-heading sm:text-sm sm:italic">{orderId}</span>
         </span>
       </nav>
 
@@ -204,7 +205,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
                   {shipment.trackingUrl && <a href={shipment.trackingUrl} target="_blank" rel="noopener noreferrer" className="underline">Track shipment</a>}
                 </div>
               ))}
-              <p className="mt-3 break-all text-xs text-[#696d60]">Order reference: {params.orderId}</p>
+              <p className="mt-3 break-all text-xs text-[#696d60]">Order reference: {orderId}</p>
             </div>
             {notice && <p role="alert" className="mt-5 border-l-2 border-[#a33d3d] pl-3 font-heading text-sm">{notice} We will try again automatically.</p>}
 
@@ -222,7 +223,7 @@ export default function OrderPage({ params }: { params: { orderId: string } }) {
             <section className="mt-9 border-t border-[#777b6b]/35 pt-6 font-heading text-sm leading-relaxed text-[#55594e]" aria-labelledby="project-note-heading">
               <h2 id="project-note-heading" className="menu-heading text-3xl text-[#32352e]">beyond the headlines</h2>
               <p className="mt-3">This project is an invitation to spend time with the public record—not only the headlines—and to keep asking what happened, who was protected, and where accountability is still owed.</p>
-              <p className="mt-3">The goal is to encourage curiosity and sustained public attention. 100% of Net profits will be donated to <a href="https://www.worldwithoutexploitation.org" target="_blank" rel="noopener noreferrer" className="underline">World Without Exploitation</a>. Consider donating directly instead!</p>
+              <p className="mt-3">The goal is to encourage curiosity and sustained public attention. 100% of <Link href="/terms#charity" className="underline">net profits</Link> will be donated to non-profits fighting human trafficking. Consider donating directly instead!</p>
               <a href="https://www.justice.gov/epstein/doj-disclosures" target="_blank" rel="noreferrer" className="mt-4 inline-flex border-b border-[#55594e] pb-1 text-[#32352e] hover:text-black">Browse the DOJ’s public disclosures <span className="ml-2" aria-hidden="true">↗</span></a>
             </section>
 

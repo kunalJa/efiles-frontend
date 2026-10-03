@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
-export default function CheckoutPage({ searchParams }: { searchParams: { canceled?: string } }) {
-  redirect(searchParams.canceled === "1" ? "/?canceled=1" : "/");
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ canceled?: string }> }) {
+  const { canceled } = await searchParams;
+  redirect(canceled === "1" ? "/?canceled=1" : "/");
 }

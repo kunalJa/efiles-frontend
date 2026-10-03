@@ -23,7 +23,7 @@ beforeEach(() => {
 test("reports missing order-status configuration without querying DynamoDB", async () => {
   delete process.env.AWS_ORDER_ID_INDEX_NAME;
 
-  const response = await GET(new Request("http://localhost"), { params: { orderId } });
+  const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
 
   expect(response.status).toBe(500);
   expect(await response.json()).toEqual({ error: "Order status is not configured" });
@@ -34,7 +34,7 @@ test("returns pending with 202 before Lambda claims an inventory row", async () 
   sendQuery.mockResolvedValue({ Items: [] });
 
   const response = await GET(new Request("http://localhost"), {
-    params: { orderId },
+    params: Promise.resolve({ orderId }),
   });
 
   expect(response.status).toBe(202);
@@ -69,7 +69,7 @@ test("returns sanitized lifecycle fields without revealing the assigned file", a
   });
 
   const response = await GET(new Request("http://localhost"), {
-    params: { orderId },
+    params: Promise.resolve({ orderId }),
   });
 
   expect(response.status).toBe(200);
@@ -90,7 +90,7 @@ test("uses the completed row instead of a duplicate unfinished inventory claim",
     { OrderID: orderId, Status: "SOLD", ShirtSize: "M", PrintfulStatus: "pending", S3Key: "VOL00009/EFTA00505541.pdf" },
   ] });
 
-  const response = await GET(new Request("http://localhost"), { params: { orderId } });
+  const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
 
   expect(await response.json()).toEqual({ orderId, status: "SOLD", shirtSize: "M", fulfillmentStatus: "pending", volume: 9 });
   expect(sendQuery.mock.calls[0][0].input.Limit).toBeUndefined();
@@ -101,7 +101,7 @@ test("reveals only a volume for a completed draft order", async () => {
     Items: [{ Status: "DRAFT_ONLY", S3Key: "VOL00010/EFTA00420940.pdf", FileID: "EFTA00420940" }],
   });
 
-  const response = await GET(new Request("http://localhost"), { params: { orderId } });
+  const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
 
   expect(await response.json()).toEqual({ orderId, status: "DRAFT_ONLY", volume: 10 });
 });
@@ -114,7 +114,7 @@ test("omits a volume when the stored source key is unexpected", async () => {
   ]) {
     sendQuery.mockResolvedValue({ Items: [{ Status: "SOLD", S3Key }] });
 
-    const response = await GET(new Request("http://localhost"), { params: { orderId } });
+    const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
 
     expect(await response.json()).toEqual({ orderId, status: "SOLD" });
   }
@@ -126,7 +126,7 @@ test("does not expose a file ID or volume before completion or on failure", asyn
       Items: [{ Status: status, FileID: "EFTA00505541", S3Key: "VOL00009/EFTA00505541.pdf" }],
     });
 
-    const response = await GET(new Request("http://localhost"), { params: { orderId } });
+    const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
 
     expect(await response.json()).toEqual({ orderId, status });
   }
@@ -142,7 +142,7 @@ test("fetches live Printful shipments server-side without exposing private field
     recipient: { email: "private@example.com" },
   } }) });
 
-  const response = await GET(new Request("http://localhost"), { params: { orderId } });
+  const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
 
   expect(await response.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "fulfilled",
     shipments: [{ carrier: "USPS", trackingNumber: "123", trackingUrl: "https://tracking.example/123" }] });
@@ -159,12 +159,12 @@ test("falls back to stored status when Printful is unavailable or the order does
 
   try {
     printfulFetch.mockRejectedValueOnce(new Error("Printful unavailable"));
-    const unavailable = await GET(new Request("http://localhost"), { params: { orderId } });
+    const unavailable = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
     expect(await unavailable.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "pending" });
     printfulFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ code: 200, result: {
       external_id: "someone-else", status: "fulfilled", shipments: [{ tracking_url: "https://tracking.example/private" }],
     } }) });
-    const mismatched = await GET(new Request("http://localhost"), { params: { orderId } });
+    const mismatched = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
     expect(await mismatched.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "pending" });
   } finally {
     consoleError.mockRestore();
@@ -177,7 +177,7 @@ test("does not send a Printful store display name as the store ID", async () => 
   const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
 
   try {
-    const response = await GET(new Request("http://localhost"), { params: { orderId } });
+    const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
     expect(await response.json()).toEqual({ orderId, status: "SOLD", fulfillmentStatus: "pending" });
     expect(printfulFetch).not.toHaveBeenCalled();
     expect(consoleError).toHaveBeenCalledWith("Unable to retrieve live fulfillment status", expect.objectContaining({
@@ -190,13 +190,13 @@ test("does not send a Printful store display name as the store ID", async () => 
 
 test("does not call Printful for an unfinished order", async () => {
   sendQuery.mockResolvedValue({ Items: [{ Status: "PROCESSING", PrintfulOrderID: 12345 }] });
-  await GET(new Request("http://localhost"), { params: { orderId } });
+  await GET(new Request("http://localhost"), { params: Promise.resolve({ orderId }) });
   expect(printfulFetch).not.toHaveBeenCalled();
 });
 
 test("rejects an invalid order ID without querying DynamoDB", async () => {
   const response = await GET(new Request("http://localhost"), {
-    params: { orderId: "not/valid" },
+    params: Promise.resolve({ orderId: "not/valid" }),
   });
 
   expect(response.status).toBe(400);
