@@ -114,7 +114,6 @@ function SpecialsCatalog({ scrollRef, canceled, returnSize }: {
           ))}
           <li>Contact: <SupportEmail /></li>
         </ul>
-        <p className="mt-8 font-heading text-xs italic text-[#8a8e80]">E-Files · End of menu</p>
       </footer>
         </div>
       </div>
