@@ -24,8 +24,8 @@ const monoFont = Courier_Prime({
 
 export const metadata: Metadata = {
   title: {
-    default: "E-Files Shirts | Mystery Archive T-Shirts",
-    template: "%s | E-Files Shirts",
+    default: "mysteryfile.store",
+    template: "%s | mysteryfile.store",
   },
   description:
     "Discover a one-of-a-kind mystery t-shirt featuring unique archival artwork.",
